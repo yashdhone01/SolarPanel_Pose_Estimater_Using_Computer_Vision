@@ -8,6 +8,7 @@ import plane_fit
 import ui
 import visualization
 import controls
+import failure
 
 def main():
     calibrate.run_calibration()
@@ -101,16 +102,18 @@ def main():
             sift_result = sift_match.match_and_mask(img_left_rect, img_r_rect)
             if sift_result[0] is None:
                 metrics['confidence'] = 'LOW'
+                metrics['status'] = 'LOW FEATURE CONFIDENCE'
                 continue
                 
             inlier_keypoints, match_img, H, panel_mask = sift_result
-            _, _, disp_vis, point_cloud = depth.compute_depth_and_pointcloud(img_l, img_r, calib_data, panel_mask)
+            _, _, disp_vis, point_cloud, center_depth, center_pt, valid_points, z_std = depth.compute_depth_and_pointcloud(img_l, img_r, calib_data, panel_mask)
+            
+            metrics['center_depth'] = center_depth * 100.0 # Convert to cm
+            metrics['center_pt'] = center_pt
             
             # SIFT points drawn on left image
             kp_l, kp_r, good_matches, matchesMask = inlier_keypoints
             inlier_count = sum(matchesMask)
-            inlier_ratio = inlier_count / max(1, len(good_matches))
-            metrics['confidence'] = 'HIGH' if inlier_ratio > 0.5 else 'LOW'
             
             # Draw keypoints on left rect
             img_left_rect = cv2.cvtColor(img_left_rect, cv2.COLOR_GRAY2BGR)
@@ -126,6 +129,13 @@ def main():
                 s = sun_vector / np.linalg.norm(sun_vector)
                 angle_deg = np.degrees(np.arccos(np.clip(np.dot(n, s), -1.0, 1.0)))
                 metrics['error'] = angle_deg
+                
+                status, confidence = failure.evaluate_confidence(inlier_count, valid_points, z_std, angle_deg)
+                metrics['status'] = status
+                metrics['confidence'] = confidence
+            else:
+                metrics['status'] = 'NO RELIABLE ESTIMATE'
+                metrics['confidence'] = 'LOW'
 
     cv2.destroyAllWindows()
 

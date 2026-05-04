@@ -78,8 +78,29 @@ def compute_depth_and_pointcloud(img_l_dist, img_r_dist, calib_data, panel_mask)
     
     point_cloud = points_3d[mask_combined]
     
-    # Create disparity map for visualization (normalized)
-    disp_vis = cv2.normalize(disparity, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
-    disp_vis = np.uint8(disp_vis)
+    # Create disparity map for visualization (normalized + JET + masked)
+    disp_vis = np.zeros_like(disparity, dtype=np.uint8)
+    y_idx, x_idx = np.where(mask_combined)
     
-    return img_l_rect, img_r_rect, disp_vis, point_cloud
+    if len(x_idx) > 0:
+        d_min = disparity[mask_combined].min()
+        d_max = disparity[mask_combined].max()
+        # Scale manually to avoid normalizing background noise
+        d_scaled = np.clip((disparity - d_min) / (d_max - d_min + 1e-6) * 255.0, 0, 255).astype(np.uint8)
+        disp_vis[mask_combined] = d_scaled[mask_combined]
+        
+        # Calculate Depth at Centroid
+        cy_mask = int(np.mean(y_idx))
+        cx_mask = int(np.mean(x_idx))
+        center_depth = Z[cy_mask, cx_mask]
+        center_pt = (cx_mask, cy_mask)
+        z_std = np.std(Z[mask_combined])
+    else:
+        center_depth = 0.0
+        center_pt = (0, 0)
+        z_std = 0.0
+        
+    disp_vis_color = cv2.applyColorMap(disp_vis, cv2.COLORMAP_JET)
+    disp_vis_color[~mask_combined] = [0, 0, 0]
+    
+    return img_l_rect, img_r_rect, disp_vis_color, point_cloud, center_depth, center_pt, len(x_idx), z_std

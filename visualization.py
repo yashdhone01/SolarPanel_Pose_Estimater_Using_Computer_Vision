@@ -41,7 +41,11 @@ class SceneRenderer3D:
         self.ax.quiver(0, 0, 0, s[0], s[1], s[2], length=1.0, normalize=True, color='#ff9933', label='Sun', arrow_length_ratio=0.1)
         self.ax.scatter([s[0]*1.2], [s[1]*1.2], [s[2]*1.2], color='#ff9933', s=100, marker='o')
         
-        self.ax.set_title("3D Alignment View", color='white', pad=10)
+        self.ax.set_title("3D Reconstruction from Stereo Geometry", color='white', pad=10)
+        
+        # Add watermark text natively using ax.text2D
+        self.ax.text2D(0.05, 0.95, "Derived from real-time stereo reconstruction", transform=self.ax.transAxes, color='gray', fontsize=8)
+        
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
         self.ax.set_zlabel('Z')
