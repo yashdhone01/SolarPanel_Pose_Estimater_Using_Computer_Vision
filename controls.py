@@ -6,6 +6,23 @@ KEY_DOWN_WIN = 2621440
 KEY_LEFT_WIN = 2424832
 KEY_RIGHT_WIN = 2555904
 
+mouse_click_pos = None
+
+def mouse_callback(event, x, y, flags, param):
+    global mouse_click_pos
+    if event == cv2.EVENT_LBUTTONDOWN:
+        if x < 640 and y < 480:
+            mouse_click_pos = (x, y)
+
+def setup_mouse(window_name):
+    cv2.setMouseCallback(window_name, mouse_callback)
+
+def get_mouse_click():
+    global mouse_click_pos
+    pos = mouse_click_pos
+    mouse_click_pos = None
+    return pos
+
 def process_input(delay=1):
     """
     Waits for key press for `delay` ms.
@@ -23,6 +40,14 @@ def process_input(delay=1):
         return 'left'
     elif k == KEY_RIGHT_WIN or k == 83 or k == 63235:
         return 'right'
+    elif k == ord('w') or k == ord('W'):
+        return 'w'
+    elif k == ord('s') or k == ord('S'):
+        return 's'
+    elif k == ord('a') or k == ord('A'):
+        return 'a'
+    elif k == ord('d') or k == ord('D'):
+        return 'd'
     elif k == ord(' '):
         return 'space'
     elif k == ord('r') or k == ord('R'):
