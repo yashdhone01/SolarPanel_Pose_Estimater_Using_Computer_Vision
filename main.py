@@ -69,11 +69,22 @@ def main():
             elif key == 'q':
                 break
             elif key == ' ':
-                print("--- Triggering CV Pipeline ---")
+                print("--- Triggering CV Pipeline (Solar Tracking Mode) ---")
                 
+                # Result-Oriented Logic: The panel aligns to track the sun!
                 gt_z = np.random.uniform(2.0, 3.0)
-                p = np.random.uniform(-45, 45)
-                r = np.random.uniform(-45, 45)
+                
+                # Calculate required pitch and roll to match the sun_vector
+                p = np.degrees(np.arcsin(np.clip(sun_vector[1], -1.0, 1.0)))
+                r_cos = np.cos(np.radians(p))
+                if abs(r_cos) > 1e-6:
+                    r = np.degrees(np.arcsin(np.clip(sun_vector[0] / r_cos, -1.0, 1.0)))
+                else:
+                    r = 0.0
+                    
+                # Add slight physical imperfection (e.g., servo motor inaccuracy 0.5 degrees)
+                p += np.random.normal(0, 0.5)
+                r += np.random.normal(0, 0.5)
                 
                 img_l, img_r, gt = simulate.generate_stereo_frame(p, r, z_dist=gt_z, add_noise_flag=True)
                 

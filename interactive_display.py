@@ -5,7 +5,8 @@ import cv2
 
 class InteractiveDisplay:
     def __init__(self):
-        self.fig = plt.figure(figsize=(16, 9))
+        plt.style.use('dark_background')
+        self.fig = plt.figure(figsize=(16, 9), facecolor='#111111')
         self.axes = {}
         
         self.axes['panel1'] = self.fig.add_subplot(231)
@@ -14,6 +15,7 @@ class InteractiveDisplay:
         self.axes['panel4'] = self.fig.add_subplot(234)
         self.axes['panel5'] = self.fig.add_subplot(235)
         self.axes['panel6'] = self.fig.add_subplot(236, projection='3d')
+        self.axes['panel6'].set_facecolor('#111111')
         
         self.fig.tight_layout(pad=3.0)
         plt.ion() # Interactive mode on
@@ -142,7 +144,7 @@ class InteractiveDisplay:
             Y = uu * u[1] + vv * v[1]
             Z = uu * u[2] + vv * v[2]
             
-            ax3d.plot_surface(X, Y, Z, alpha=0.5, color='cyan')
+            ax3d.plot_surface(X, Y, Z, alpha=0.9, color='#1f77b4', edgecolor='silver', linewidth=1.5)
             
             # Draw Normal Vector
             ax3d.quiver(0, 0, 0, n[0], n[1], n[2], length=1.0, normalize=True, color='blue', label='Normal', arrow_length_ratio=0.1)
